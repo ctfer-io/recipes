@@ -1,0 +1,25 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+gomod:
+  proxy: true
+
+# Don't define builds, they will be set on the fly
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+source:
+  enabled: true
+
+checksum: {}
+
+sboms:
+  - artifacts: source
