@@ -68,7 +68,7 @@ func run() error {
 	}
 
 	// Generate goreleaser on-the-fly configuration
-	relConf["build"] = be
+	relConf["builds"] = be
 	rawConf, err = yaml.Marshal(relConf)
 	if err != nil {
 		return err
