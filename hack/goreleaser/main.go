@@ -37,6 +37,8 @@ func run() error {
 	if err := yaml.Unmarshal(rawConf, &relConf); err != nil {
 		return err
 	}
+	fmt.Printf("rawConf: %s\n", rawConf)
+	fmt.Printf("relConf: %v\n", relConf)
 
 	// Find entries to build
 	be := []*BuildEntry{}
