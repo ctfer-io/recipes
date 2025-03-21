@@ -9,6 +9,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	goreleaserConf = ".goreleaser.yaml"
+)
+
 var (
 	ecosystems = []string{
 		"chall-manager",
@@ -29,7 +33,7 @@ func run() error {
 	}
 
 	// Parse goreleaser YAML raw content
-	rawConf, err := os.ReadFile(".goreleaser.yaml")
+	rawConf, err := os.ReadFile(goreleaserConf)
 	if err != nil {
 		return err
 	}
@@ -70,7 +74,7 @@ func run() error {
 		return err
 	}
 
-	return os.WriteFile(".goreleaser-gen.yaml", rawConf, os.ModePerm)
+	return os.WriteFile(goreleaserConf, rawConf, os.ModePerm)
 }
 
 func genID(eco, name string) string {
