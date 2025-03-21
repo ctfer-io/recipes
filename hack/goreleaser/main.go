@@ -6,11 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
-)
-
-const (
-	goreleaserConf = ".goreleaser.yaml"
 )
 
 var (
@@ -33,7 +30,7 @@ func run() error {
 	}
 
 	// Parse goreleaser YAML raw content
-	rawConf, err := os.ReadFile(goreleaserConf)
+	rawConf, err := os.ReadFile(filepath.Join(pwd, ".goreleaser.yaml"))
 	if err != nil {
 		return err
 	}
@@ -74,7 +71,9 @@ func run() error {
 		return err
 	}
 
-	return os.WriteFile(goreleaserConf, rawConf, os.ModePerm)
+	fmt.Printf("%s\n", rawConf)
+	return nil
+	// return output("CONFIG", string(rawConf))
 }
 
 func genID(eco, name string) string {
@@ -89,4 +88,19 @@ type BuildEntry struct {
 	Env    []string `yaml:"env"`
 	GOOS   []string `yaml:"goos"`
 	GOArch []string `yaml:"goarch"`
+}
+
+func output(k, v string) error {
+	// Open GitHub output file
+	f, err := os.OpenFile(os.Getenv("GITHUB_OUTPUT"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+	if err != nil {
+		return errors.Wrap(err, "opening action output file")
+	}
+	defer f.Close()
+
+	// Write and ensure it went fine
+	if _, err = fmt.Fprintf(f, "%s=%s\n", k, v); err != nil {
+		return errors.Wrapf(err, "writing %s output", k)
+	}
+	return nil
 }
