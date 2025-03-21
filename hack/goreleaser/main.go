@@ -41,7 +41,8 @@ func run() error {
 	// Find entries to build
 	be := []*BuildEntry{}
 	for _, eco := range ecosystems {
-		entries, err := os.ReadDir(filepath.Join(pwd, eco))
+		ecoPath := filepath.Join(pwd, eco)
+		entries, err := os.ReadDir(ecoPath)
 		if err != nil {
 			return err
 		}
@@ -53,7 +54,7 @@ func run() error {
 			id := genID(eco, e.Name())
 			be = append(be, &BuildEntry{
 				ID:     id,
-				Main:   filepath.Join(pwd, eco, e.Name()),
+				Main:   filepath.Join(ecoPath, e.Name()),
 				Binary: id,
 				Env:    []string{"CGO_ENABLED=0"},
 				GOOS:   []string{"linux"},
@@ -69,7 +70,7 @@ func run() error {
 		return err
 	}
 
-	fmt.Println(rawConf)
+	fmt.Printf("%s\n", rawConf)
 	return nil
 }
 
