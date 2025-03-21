@@ -31,13 +31,16 @@ jobs:
 
       - name: Regenerate .goreleaser
         run: |
-          go run hack/goreleaser/main.go
+          cat .goreleaser.yaml
+          go run hack/goreleaser/main.go > .goreleaser.yaml
+          cat .goreleaser.yaml
 
       - name: Install GoReleaser
         id: run-goreleaser
         uses: goreleaser/goreleaser-action@90a3faa9d0182683851fbfa97ca1a2cb983bfca3 # v6.2.1
         with:
           version: latest
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
