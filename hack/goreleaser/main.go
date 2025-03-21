@@ -29,7 +29,7 @@ func run() error {
 	}
 
 	// Parse goreleaser YAML raw content
-	rawConf, err := os.ReadFile(filepath.Join(pwd, ".goreleaser.yaml"))
+	rawConf, err := os.ReadFile(".goreleaser.yaml")
 	if err != nil {
 		return err
 	}
