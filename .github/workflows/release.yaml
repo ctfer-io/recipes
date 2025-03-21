@@ -32,7 +32,7 @@ jobs:
       - name: Regenerate .goreleaser
         run: |
           cat .goreleaser.yaml
-          go run hack/goreleaser/main.go > .goreleaser.yaml
+          go run hack/goreleaser/main.go
           cat .goreleaser.yaml
 
       - name: Install GoReleaser
