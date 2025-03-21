@@ -29,20 +29,18 @@ jobs:
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@f325610c9f50a54015d37c8d16cb3b0e2c8f4de0 # v0.18.0
 
-      - name: Generate GoReleaser configuration
-        id: goreleaser-config
-        run: |
-          go run hack/goreleaser/main.go
-
-      - name: Run GoReleaser
-        id: run-goreleaser
+      - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@90a3faa9d0182683851fbfa97ca1a2cb983bfca3 # v6.2.1
         with:
           version: latest
-          args: release -f "$GORELEASER_CONFIG" --clean
+          install-only: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GORELEASER_CONFIG: ${{ steps.goreleaser-config.outputs.config }}
+
+      - name: Run GoReleaser
+        id: run-goreleaser
+        run: |
+          go run hack/goreleaser/main.go | goreleaser release --clean -f -
 
       - name: Generate subject
         id: hash
