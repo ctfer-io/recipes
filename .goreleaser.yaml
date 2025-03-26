@@ -16,6 +16,9 @@ changelog:
       - '^docs:'
       - '^test:'
 
+archives:
+  - format: binary
+
 source:
   enabled: true
 
