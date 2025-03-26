@@ -39,7 +39,7 @@ jobs:
         id: run-goreleaser
         run: |
           go run hack/goreleaser/main.go | goreleaser release --clean -f -
-          echo "artifacts=$(cat artifacts.json)" >> $GITHUB_OUTPUT
+          echo "artifacts=$(cat dist/artifacts.json)" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
