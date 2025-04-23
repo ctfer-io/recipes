@@ -22,7 +22,8 @@ func Run[T any](f Factory[T]) {
 			DecodeHook: mapstructure.ComposeDecodeHookFunc(
 				challmanager.ExposeTypeHook,
 			),
-			Result: conf,
+			WeaklyTypedInput: true,
+			Result:           conf,
 		})
 		if err != nil {
 			panic(err)
