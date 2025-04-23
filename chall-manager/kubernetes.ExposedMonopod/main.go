@@ -30,7 +30,7 @@ type Values struct {
 }
 
 func main() {
-	recipes.Run(func(req *recipes.Request[*Config], resp *sdk.Response, opts ...pulumi.ResourceOption) error {
+	recipes.Run(func(req *recipes.Request[Config], resp *sdk.Response, opts ...pulumi.ResourceOption) error {
 		// Build template ASAP -> fail fast
 		citmpl, err := template.New("connectionInfo").Parse(req.Config.ConnectionInfo)
 		if err != nil {

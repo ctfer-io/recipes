@@ -10,14 +10,14 @@ import (
 type Request[T any] struct {
 	Ctx      *pulumi.Context
 	Identity string
-	Config   T
+	Config   *T
 }
 
 type Factory[T any] func(req *Request[T], resp *sdk.Response, opts ...pulumi.ResourceOption) error
 
 func Run[T any](f Factory[T]) {
 	sdk.Run(func(req *sdk.Request, resp *sdk.Response, opts ...pulumi.ResourceOption) error {
-		conf := *new(T)
+		conf := new(T)
 		dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 			DecodeHook: mapstructure.ComposeDecodeHookFunc(
 				challmanager.ExposeTypeHook,

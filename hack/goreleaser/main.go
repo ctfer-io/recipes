@@ -72,7 +72,6 @@ func run() error {
 
 	fmt.Printf("%s\n", rawConf)
 	return nil
-	// return output("CONFIG", string(rawConf))
 }
 
 func genID(eco, name string) string {
