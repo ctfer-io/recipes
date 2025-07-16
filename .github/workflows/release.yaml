@@ -50,6 +50,13 @@ jobs:
         env:
           VERSION: ${{ github.ref_name }}
 
+      - name: Upload built artifacts as release assets
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        with:
+          files: dist/*.oci.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   provenance:
     needs: [release]
     permissions:
