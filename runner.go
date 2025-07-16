@@ -1,9 +1,10 @@
 package recipes
 
 import (
+	"net/url"
+
 	"github.com/ctfer-io/chall-manager/sdk"
-	challmanager "github.com/ctfer-io/recipes/chall-manager"
-	"github.com/go-viper/mapstructure/v2"
+	"github.com/go-playground/form/v4"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -18,17 +19,9 @@ type Factory[T any] func(req *Request[T], resp *sdk.Response, opts ...pulumi.Res
 func Run[T any](f Factory[T]) {
 	sdk.Run(func(req *sdk.Request, resp *sdk.Response, opts ...pulumi.ResourceOption) error {
 		conf := new(T)
-		dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-			DecodeHook: mapstructure.ComposeDecodeHookFunc(
-				challmanager.ExposeTypeHook,
-			),
-			WeaklyTypedInput: true,
-			Result:           conf,
-		})
-		if err != nil {
-			panic(err)
-		}
-		if err := dec.Decode(req.Config.Additional); err != nil {
+
+		dec := form.NewDecoder()
+		if err := dec.Decode(conf, toValues(req.Config.Additional)); err != nil {
 			return err
 		}
 
@@ -38,4 +31,12 @@ func Run[T any](f Factory[T]) {
 			Config:   conf,
 		}, resp, opts...)
 	})
+}
+
+func toValues(additionals map[string]string) url.Values {
+	vals := make(url.Values, len(additionals))
+	for k, v := range additionals {
+		vals[k] = []string{v}
+	}
+	return vals
 }

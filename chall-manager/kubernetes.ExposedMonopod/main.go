@@ -14,25 +14,25 @@ import (
 
 // Config combines all possibile inputs to this recipe.
 type Config struct {
-	Image              string            `mapstructure:"image"`
-	Ports              []PortArgs        `mapstructure:"ports"`
-	Hostname           string            `mapstructure:"hostname"`
-	Files              map[string]string `mapstructure:"files,omitempty"`
-	IngressAnnotations map[string]string `mapstructure:"ingressAnnotations,omitempty"`
-	IngressNamespace   string            `mapstructure:"ingressNamespace,omitempty"`
-	IngressLabels      map[string]string `mapstructure:"ingressLabels,omitempty"`
-	ConnectionInfo     string            `mapstructure:"connectionInfo"`
+	Image              string            `form:"image"`
+	Ports              []PortArgs        `form:"ports"`
+	Hostname           string            `form:"hostname"`
+	Files              map[string]string `form:"files"`
+	IngressAnnotations map[string]string `form:"ingressAnnotations"`
+	IngressNamespace   string            `form:"ingressNamespace"`
+	IngressLabels      map[string]string `form:"ingressLabels"`
+	ConnectionInfo     string            `form:"connectionInfo"`
 }
 
 type PortArgs struct {
-	Port       int            `mapstructure:"port"`
-	Protocol   string         `mapstructure:"protocol"`
-	ExposeType k8s.ExposeType `mapstructure:"exposeType"`
+	Port       int            `form:"port"`
+	Protocol   string         `form:"protocol"`
+	ExposeType k8s.ExposeType `form:"exposeType"`
 }
 
 // Values are used as part of the templating of Config.ConnectionInfo.
 type Values struct {
-	Ports map[string]string `json:"ports"`
+	URLs map[string]string
 }
 
 func main() {
@@ -46,7 +46,7 @@ func main() {
 		}
 
 		// Deploy k8s.ExposedMonopod
-		cm, err := k8s.NewExposedMonopod(req.Ctx, "recipe-emp", &k8s.ExposedMonopodArgs{
+		cm, err := k8s.NewExposedMonopod(req.Ctx, "recipe-e1p", &k8s.ExposedMonopodArgs{
 			Identity: pulumi.String(req.Identity),
 			Hostname: pulumi.String(req.Config.Hostname),
 			Label:    pulumi.String(req.Ctx.Stack()),
@@ -76,7 +76,7 @@ func main() {
 		// Template connection info
 		resp.ConnectionInfo = cm.URLs.ApplyT(func(urls map[string]string) (string, error) {
 			values := &Values{
-				Ports: urls,
+				URLs: urls,
 			}
 			buf := &bytes.Buffer{}
 			if err := citmpl.Execute(buf, values); err != nil {
