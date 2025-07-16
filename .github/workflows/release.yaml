@@ -11,7 +11,7 @@ permissions:
 jobs:
   release:
     outputs:
-      hashes: ${{ steps.build.outputs.hashes }}
+      hashes: ${{ steps.hash.outputs.hashes }}
     permissions:
       contents: write  # for goreleaser/goreleaser-action to create a GitHub release
     runs-on: ubuntu-latest
@@ -56,6 +56,11 @@ jobs:
           files: dist/*.oci.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Hash dist/
+        id: hash
+        run: |
+          echo "hashes=$(sha256sum dist/* | base64 -w0)" >> "$GITHUB_OUTPUT"
 
   provenance:
     needs: [release]

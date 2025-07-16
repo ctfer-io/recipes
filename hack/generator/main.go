@@ -5,14 +5,11 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
-	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
@@ -50,7 +47,6 @@ func run(ctx context.Context) error {
 	ver := os.Getenv("VERSION")
 
 	// Find entries to build
-	bes := []*BuildEntry{}
 	for _, eco := range ecosystems {
 		entries, err := os.ReadDir(eco)
 		if err != nil {
@@ -65,19 +61,13 @@ func run(ctx context.Context) error {
 			fmt.Printf("[+] Building %s\n", dir)
 
 			into := filepath.Join(dist, fmt.Sprintf("recipes_%s_%s_%s.oci.tar.gz", eco, e.Name(), ver))
-			dig, err := build(ctx, dir, into)
-			if err != nil {
+			if err := build(ctx, dir, into); err != nil {
 				return errors.Wrapf(err, "failed to build %s", dir)
 			}
-			bes = append(bes, &BuildEntry{
-				Path:   into,
-				Digest: dig,
-			})
 		}
 	}
 
-	// Advertise them through an output, later passed to SLSA generator
-	return advertise(bes)
+	return nil
 }
 
 type BuildEntry struct {
@@ -85,23 +75,19 @@ type BuildEntry struct {
 	Digest string
 }
 
-func build(ctx context.Context, dir, into string) (string, error) {
+func build(ctx context.Context, dir, into string) error {
 	// Compile Go binary
 	if err := compile(ctx, dir); err != nil {
-		return "", err
+		return err
 	}
 
 	// Then pack it all in an OCI layout in filesystem
 	if err := ociLayout(ctx, dir); err != nil {
-		return "", err
+		return err
 	}
 
 	// Compress it in a tar.gz and compute its sha256 sum
-	digest, err := compress(dir, into)
-	if err != nil {
-		return "", err
-	}
-	return digest, nil
+	return compress(dir, into)
 }
 
 func compile(ctx context.Context, dir string) error {
@@ -163,18 +149,17 @@ func ociLayout(ctx context.Context, dir string) error {
 	return nil
 }
 
-func compress(path, target string) (string, error) {
+func compress(path, target string) error {
 	tarfile, err := os.Create(target)
 	if err != nil {
-		return "", errors.Wrapf(err, "creating tar.gz %s", target)
+		return errors.Wrapf(err, "creating tar.gz %s", target)
 	}
 	defer tarfile.Close()
 
 	hasher := sha256.New()
 
 	// Create cascading writers
-	multiWriter := io.MultiWriter(tarfile, hasher)
-	gzipWriter := gzip.NewWriter(multiWriter)
+	gzipWriter := gzip.NewWriter(hasher)
 	tarWriter := tar.NewWriter(gzipWriter)
 
 	dir := filepath.Join(path, dist)
@@ -236,33 +221,7 @@ func compress(path, target string) (string, error) {
 		return nil
 	})
 	if err != nil {
-		return "", errors.Wrapf(err, "creating tar.gz %s", target)
-	}
-
-	return hex.EncodeToString(hasher.Sum(nil)), nil
-}
-
-func advertise(bes []*BuildEntry) error {
-	var entries []string
-	for _, be := range bes {
-		entry := fmt.Sprintf("path=%s,digest=sha256:%s\n", be.Path, be.Digest)
-		b64 := base64.StdEncoding.EncodeToString([]byte(entry))
-		entries = append(entries, b64)
-	}
-	return output("hashes", strings.Join(entries, "\n"))
-}
-
-func output(k, v string) error {
-	// Open GitHub output file
-	f, err := os.OpenFile(os.Getenv("GITHUB_OUTPUT"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
-	if err != nil {
-		return errors.Wrap(err, "opening action output file")
-	}
-	defer f.Close()
-
-	// Write and ensure it went fine
-	if _, err = fmt.Fprintf(f, "%s=%s\n", k, v); err != nil {
-		return errors.Wrapf(err, "writing %s output", k)
+		return errors.Wrapf(err, "creating tar.gz %s", target)
 	}
 	return nil
 }
