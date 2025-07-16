@@ -16,7 +16,8 @@ archives:
 source:
   enabled: true
 
-checksum: {}
+checksum:
+  disable: true
 
 sboms:
   - artifacts: source

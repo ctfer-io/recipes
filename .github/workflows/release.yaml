@@ -49,7 +49,7 @@ jobs:
         env:
           VERSION: ${{ github.ref_name }}
 
-      - name: Upload built artifacts as release assets
+      - name: Upload OCI recipes
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
           files: dist/*.oci.tar.gz
@@ -59,7 +59,15 @@ jobs:
       - name: Hash dist/
         id: hash
         run: |
-          echo "hashes=$(sha256sum dist/* | base64 -w0)" >> "$GITHUB_OUTPUT"
+          sha256sum dist/* > dist/checksums.txt
+          echo "hashes=$(cat dist/checksums.txt | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload checksums
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        with:
+          files: dist/checksums.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   provenance:
     needs: [release]
