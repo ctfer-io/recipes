@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"context"
-	"crypto/sha256"
 	"fmt"
 	"io"
 	"os"
@@ -60,11 +59,11 @@ func run(ctx context.Context) error {
 			dir := filepath.Join(eco, e.Name())
 			fmt.Printf("[+] Building %s\n", dir)
 
-			into := filepath.Join(dist, fmt.Sprintf("recipes_%s_%s_%s.oci.tar.gz", eco, e.Name(), ver))
+			into := filepath.Join(dist, fmt.Sprintf("%s_%s_%s.oci.tar.gz", eco, e.Name(), ver))
 			if err := build(ctx, dir, into); err != nil {
 				return errors.Wrapf(err, "failed to build %s", dir)
 			}
-			fmt.Printf("    Exported into to %s\n", into)
+			fmt.Printf("    Exported to %s\n", into)
 		}
 	}
 
@@ -157,10 +156,8 @@ func compress(path, target string) error {
 	}
 	defer tarfile.Close()
 
-	hasher := sha256.New()
-
 	// Create cascading writers
-	gzipWriter := gzip.NewWriter(hasher)
+	gzipWriter := gzip.NewWriter(tarfile)
 	tarWriter := tar.NewWriter(gzipWriter)
 
 	dir := filepath.Join(path, dist)

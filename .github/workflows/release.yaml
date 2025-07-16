@@ -44,9 +44,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build OCI tar.gz recipes
-        id: build
         run: |
-          go run hack/generator/main.go
+          go run cmd/generator/main.go
         env:
           VERSION: ${{ github.ref_name }}
 
