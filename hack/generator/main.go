@@ -64,6 +64,7 @@ func run(ctx context.Context) error {
 			if err := build(ctx, dir, into); err != nil {
 				return errors.Wrapf(err, "failed to build %s", dir)
 			}
+			fmt.Printf("    Exported into to %s\n", into)
 		}
 	}
 
