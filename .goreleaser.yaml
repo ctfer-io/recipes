@@ -1,6 +1,7 @@
 version: 2
 
-# Don't define builds, they will be set on the fly
+builds:
+  - skip: true
 
 changelog:
   sort: asc
