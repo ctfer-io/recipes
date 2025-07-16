@@ -1,12 +1,5 @@
 version: 2
 
-before:
-  hooks:
-    - go mod tidy
-
-gomod:
-  proxy: true
-
 # Don't define builds, they will be set on the fly
 
 changelog:

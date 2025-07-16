@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 jobs:
-  goreleaser:
+  release:
     outputs:
-      hashes: ${{ steps.hash.outputs.hashes }}
+      hashes: ${{ steps.build.outputs.hashes }}
     permissions:
       contents: write  # for goreleaser/goreleaser-action to create a GitHub release
     runs-on: ubuntu-latest
@@ -36,30 +36,27 @@ jobs:
           install-only: true
 
       - name: Run GoReleaser
-        id: run-goreleaser
-        run: |
-          go run hack/goreleaser/main.go | goreleaser release --clean -f -
-          echo "artifacts=$(cat dist/artifacts.json)" >> $GITHUB_OUTPUT
+        uses: goreleaser/goreleaser-action@9c156ee8a17a598857849441385a2041ef570552 # v6.3.0
+        with:
+          version: latest
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate subject
-        id: hash
-        env:
-          ARTIFACTS: "${{ steps.run-goreleaser.outputs.artifacts }}"
+      - name: Build OCI tar.gz recipes
+        id: build
         run: |
-          set -euo pipefail
-
-          checksum_file=$(echo "$ARTIFACTS" | jq -r '.[] | select (.type=="Checksum") | .path')
-          echo "hashes=$(cat $checksum_file | base64 -w0)" >> "$GITHUB_OUTPUT"
+          go run hack/generator/main.go
+        env:
+          VERSION: ${{ github.ref_name }}
 
   provenance:
-    needs: [goreleaser]
+    needs: [release]
     permissions:
       actions: read # To read the workflow path.
       id-token: write # To sign the provenance.
       contents: write # To add assets to a release.
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0 # not pinned to avoid breaking it, use it to target refs/tags/vX.Y.Z
     with:
-      base64-subjects: "${{ needs.goreleaser.outputs.hashes }}"
+      base64-subjects: "${{ needs.release.outputs.hashes }}"
       upload-assets: true # upload to a new release
