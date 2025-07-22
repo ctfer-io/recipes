@@ -154,7 +154,6 @@ func compress(path, target string) error {
 	if err != nil {
 		return errors.Wrapf(err, "creating tar.gz %s", target)
 	}
-	defer tarfile.Close()
 
 	// Create cascading writers
 	gzipWriter := gzip.NewWriter(tarfile)
@@ -221,5 +220,13 @@ func compress(path, target string) error {
 	if err != nil {
 		return errors.Wrapf(err, "creating tar.gz %s", target)
 	}
-	return nil
+
+	// Close all writers and file
+	if err := tarWriter.Close(); err != nil {
+		return err
+	}
+	if err := gzipWriter.Close(); err != nil {
+		return err
+	}
+	return tarfile.Close()
 }
