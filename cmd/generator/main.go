@@ -60,7 +60,7 @@ func run(ctx context.Context) error {
 			fmt.Printf("[+] Building %s\n", dir)
 
 			into := filepath.Join(dist, fmt.Sprintf("%s_%s_%s.oci.tar.gz", eco, e.Name(), ver))
-			if err := build(ctx, dir, into); err != nil {
+			if err := build(ctx, dir, into, ver); err != nil {
 				return errors.Wrapf(err, "failed to build %s", dir)
 			}
 			fmt.Printf("    Exported to %s\n", into)
@@ -75,14 +75,14 @@ type BuildEntry struct {
 	Digest string
 }
 
-func build(ctx context.Context, dir, into string) error {
+func build(ctx context.Context, dir, into, ver string) error {
 	// Compile Go binary
 	if err := compile(ctx, dir); err != nil {
 		return err
 	}
 
 	// Then pack it all in an OCI layout in filesystem
-	if err := ociLayout(ctx, dir); err != nil {
+	if err := ociLayout(ctx, dir, ver); err != nil {
 		return err
 	}
 
@@ -103,7 +103,7 @@ func compile(ctx context.Context, dir string) error {
 	return nil
 }
 
-func ociLayout(ctx context.Context, dir string) error {
+func ociLayout(ctx context.Context, dir, ver string) error {
 	// Create new file store
 	store, err := file.New(dir)
 	if err != nil {
@@ -130,7 +130,7 @@ func ociLayout(ctx context.Context, dir string) error {
 	}
 
 	// Tag the memory store
-	if err := store.Tag(ctx, root, root.Digest.String()); err != nil {
+	if err := store.Tag(ctx, root, ver); err != nil {
 		return errors.Wrap(err, "tagging memory store")
 	}
 
