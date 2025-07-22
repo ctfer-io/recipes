@@ -59,7 +59,8 @@ jobs:
       - name: Hash dist/
         id: hash
         run: |
-          sha256sum dist/* > dist/checksums.txt
+          sha256sum dist/*.tar.gz > dist/checksums.txt
+          sha256sum dist/*.sbom.json >> dist/checksums.txt
           echo "hashes=$(cat dist/checksums.txt | base64 -w0)" >> "$GITHUB_OUTPUT"
 
       - name: Upload checksums
