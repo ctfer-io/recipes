@@ -12,6 +12,9 @@ import (
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/workspace"
+	"go.uber.org/multierr"
+	"gopkg.in/yaml.v3"
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content/file"
 	"oras.land/oras-go/v2/content/oci"
@@ -112,6 +115,9 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 	defer func() { _ = store.Close() }()
 
 	// Add files
+	if err := preparePulumiYaml(dir); err != nil {
+		return errors.Wrap(err, "preparing Pulumi.yaml")
+	}
 	layers := []ocispec.Descriptor{}
 	for _, f := range []string{"main", "Pulumi.yaml"} {
 		desc, err := store.Add(ctx, f, fileType, f)
@@ -147,6 +153,36 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 	}
 
 	return nil
+}
+
+func preparePulumiYaml(dir string) error {
+	pyp := filepath.Join(dir, "Pulumi.yaml")
+	b, err := os.ReadFile(pyp)
+	if err != nil {
+		return err
+	}
+
+	var proj workspace.Project
+	if err := yaml.Unmarshal(b, &proj); err != nil {
+		return errors.Wrap(err, "unmarshalling Pulumi.yaml")
+	}
+	if _, ok := proj.Runtime.Options()["binary"]; !ok {
+		proj.Runtime.SetOption("binary", "./main")
+	}
+
+	f, err := os.OpenFile(pyp, os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	enc := yaml.NewEncoder(f)
+	enc.SetIndent(2) // common practice through ctfer-io codebases
+	if err := enc.Encode(proj); err != nil {
+		return errors.Wrap(multierr.Append(
+			err,
+			f.Close(),
+		), "marshalling Pulumi.yaml")
+	}
+	return f.Close()
 }
 
 func compress(path, target string) error {
