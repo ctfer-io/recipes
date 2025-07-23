@@ -54,8 +54,8 @@ github.com/containerd/log v0.1.0/go.mod h1:VRRf09a7mHDIRezVKTRCrOq78v577GXq3bSa3
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/creack/pty v1.1.18 h1:n56/Zwd5o6whRC5PMGretI4IdRLlmBXYNjScPaBgsbY=
 github.com/creack/pty v1.1.18/go.mod h1:MOBLtS5ELjhRRrroQr9kyvTxUAFNvYEK993ew/Vr4O4=
-github.com/ctfer-io/chall-manager/sdk v0.4.5 h1:9/+sixrI9NPMmImMNC+G+enECPz/o+rkP8oKBu9jNO8=
-github.com/ctfer-io/chall-manager/sdk v0.4.5/go.mod h1:Ps0y3EcsGsa3zSitAg8JEb/nxSWqGv/C9wsPMUBZ/Ao=
+github.com/ctfer-io/chall-manager/sdk v0.5.0 h1:h8kBbu3eCzn/Uqw+6bIBYfQkHBtocXdpoS39XRr7jCo=
+github.com/ctfer-io/chall-manager/sdk v0.5.0/go.mod h1:YOQlsnVPlJjx7ZWfGoMzE6FWzPjp9gX6am59rv3fxWA=
 github.com/cyphar/filepath-securejoin v0.3.6 h1:4d9N5ykBnSp5Xn2JkhocYDkOpURL/18CYMpo6xB9uWM=
 github.com/cyphar/filepath-securejoin v0.3.6/go.mod h1:Sdj7gXlvMcPZsbhwhQ33GguGLDGQL7h7bg04C/+u9jI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -247,8 +247,6 @@ github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231 h1:vkHw5I/plNdTr435
 github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231/go.mod h1:murToZ2N9hNJzewjHBgfFdXhZKjY3z5cYC1VXk+lbFE=
 github.com/pulumi/esc v0.14.3 h1:Zli+9LiSDT/W+Fsfr8tITxCo+5wn969tLrE4KLv44G8=
 github.com/pulumi/esc v0.14.3/go.mod h1:XnSxlt5NkmuAj304l/gK4pRErFbtqq6XpfX1tYT9Jbc=
-github.com/pulumi/pulumi-docker/sdk/v4 v4.8.0 h1:9aLMfFaVM8jOz/N/NIrsF1MTFoSqoPJwEI/Z0M2oOXY=
-github.com/pulumi/pulumi-docker/sdk/v4 v4.8.0/go.mod h1:LozTa7ZBzTs215mfeBtQWUqzKGOFhTg43TvJuWUjt98=
 github.com/pulumi/pulumi-kubernetes/sdk/v4 v4.23.0 h1:TZ/XhzF+3/jRiGsjlJHCWhXcU5E5tbXU8O0DKnPmFic=
 github.com/pulumi/pulumi-kubernetes/sdk/v4 v4.23.0/go.mod h1:jOdpeNeRvY4iN+W8aDP5+HyqrM7hXsxa9paPsmjQFfY=
 github.com/pulumi/pulumi/sdk/v3 v3.178.0 h1:24jNMvy6cMshwmW88Jm3k8ON2M4d0U2ocemQRcQElXQ=
