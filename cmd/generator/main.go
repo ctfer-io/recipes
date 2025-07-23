@@ -60,7 +60,7 @@ func run(ctx context.Context) error {
 			}
 
 			dir := filepath.Join(eco, e.Name())
-			fmt.Printf("[+] Building %s\n", dir)
+			fmt.Printf("[+] Building %s@%s\n", dir, ver)
 
 			into := filepath.Join(dist, fmt.Sprintf("%s_%s_%s.oci.tar.gz", eco, e.Name(), ver))
 			if err := build(ctx, dir, into, ver); err != nil {
@@ -136,6 +136,7 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 	}
 
 	// Tag the memory store
+	fmt.Printf("    Digest: %s\n", root.Digest)
 	if err := store.Tag(ctx, root, ver); err != nil {
 		return errors.Wrap(err, "tagging memory store")
 	}
