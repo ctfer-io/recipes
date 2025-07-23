@@ -1,19 +1,50 @@
-# Recipes
+<div align="center">
+    <h1>Recipes</h1>
+    <p><b>A collection of pre-made scenarios entirely customisable with additional values, through a simple API.</b><p>
+    <a href="https://pkg.go.dev/github.com/ctfer-io/recipes"><img src="https://shields.io/badge/-reference-blue?logo=go&style=for-the-badge" alt="reference"></a>
+	<a href="https://goreportcard.com/report/github.com/ctfer-io/recipes"><img src="https://goreportcard.com/badge/github.com/ctfer-io/recipes?style=for-the-badge" alt="go report"></a>
+	<a href="https://coveralls.io/github/ctfer-io/recipes?branch=main"><img src="https://img.shields.io/coverallsCoverage/github/ctfer-io/recipes?style=for-the-badge" alt="Coverage Status"></a>
+	<br>
+	<a href=""><img src="https://img.shields.io/github/license/ctfer-io/recipes?style=for-the-badge" alt="License"></a>
+	<a href="https://github.com/ctfer-io/recipes/actions/workflows/codeql-analysis.yaml"><img src="https://img.shields.io/github/actions/workflow/status/ctfer-io/recipes/codeql-analysis.yaml?style=for-the-badge&label=CodeQL" alt="CodeQL"></a>
+    <br>
+    <a href="https://securityscorecards.dev/viewer/?uri=github.com/ctfer-io/recipes"><img src="https://img.shields.io/ossf-scorecard/github.com/ctfer-io/recipes?label=openssf%20scorecard&style=for-the-badge" alt="OpenSSF Scoreboard"></a>
+</div>
 
-Recipes are [**pre-built scenarios**](https://ctfer.io/docs/chall-manager/challmaker-guides/create-scenario/#design-your-pulumi-factory), especially for [⁠chall-manager](https://github.com/ctfer-io/chall-manager), that provide a simple API to configure the complexity of a Pulumi Go-based scenarios.
-It eases the adoption of Chall-Manager on the simplest and widely adopted use cases.
+> [!CAUTION]
+> Recipes are **highly experimental** thus are subject to major refactoring and breaking changes.
 
-For instance, to deploy a single pod on Kubernetes, you need some basic data: the image name, its port, the hostname to expose on, the connection info template, etc. Out of these configuration elements, it is always a copy-pasta, which leads to compiling multiple times the same scenario with only some configuration slight changes.
-With the (not so) recent adoption of the additional on challenges and instances we may pass these configuration variables to a pre-compiled scenario, thus guarantee the quality of a scenario (enhance security + ease debug), reduce chall-manager Time To Deploy (TTD contains time to compile, time in API, time executed, punctuated by network latencies), and as for every pre-built scenario, ease offline adoption (a binary can be contained in a Hauler archive).
+The recipes avoid reinventing the wheel for common stuff, like deploying a container in Kubernetes, with no need for re-compiling: we distribute OCI scenarios as [release artifacts](https://github.com/ctfer-io/recipes/releases) ! 🎉
 
-The core engineering idea behind is toward Model-Based approach, in order to make these scenarios readable, especially machine-readable for documentation generation.
-Maturity: **low**
+## Load into OCI registry
 
-## Example
+The following example focus on how to download the `debug` recipe then load it into an OCI registry.
+All commands should **run in the same terminal**.
 
-Still with the example of the single pod, we wanna create a kubernetes.ExposedMonopod. Such scenario could be defined per the attached image, built in CI on release, attested at SLSA 3 level (highest reachable per v1.0 for FOSS organizations), and reused whenever required.
+Requirements:
+- [`jq`](https://jqlang.org/) ;
+- [ORAS](https://oras.land/).
 
-## Future
+> [!TIP]
+> We don't explain how to start an OCI registry, perhaps if necessary you can use the [Docker registry](https://hub.docker.com/_/registry).
 
-The recipes are an essential step toward CTFOps, as the JSON schema comes from these recipes.
-Documentation generation, JSON schema, default values, Pulumi stack configuration, etc. remains work to do.
+1. Download a recipe (here we use the `debug` recipe, change to your needs):
+    ```bash
+    export LATEST=$(curl -s "https://api.github.com/repos/ctfer-io/recipes/tags" | jq -r '.[0].name')
+    wget "https://github.com/ctfer-io/recipes/releases/download/${LATEST}/recipes_debug_${LATEST}.oci.tar.gz"
+    ```
+
+2. Untar:
+    ```bash
+    export DIR="debug-oci-layout"
+    mkdir -p "${DIR}"
+    tar -xzf "recipes_debug_${LATEST}.oci.tar.gz" -C "${DIR}/"
+    ```
+
+3. Copy to registry:
+    ```bash
+    export REGISTRY="localhost:5000"
+    oras cp --from-oci-layout "./${DIR}:${LATEST}" "${REGISTRY}/debug:${LATEST}"
+    ```
+
+That's it 😉
