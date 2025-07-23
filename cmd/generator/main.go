@@ -137,7 +137,7 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 
 	// Tag the memory store
 	fmt.Printf("    Digest: %s\n", root.Digest)
-	if err := store.Tag(ctx, root, ver); err != nil {
+	if err := store.Tag(ctx, root, root.Digest.String()); err != nil {
 		return errors.Wrap(err, "tagging memory store")
 	}
 
@@ -149,8 +149,8 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 	}
 
 	// Copy content (graph)
-	if err := oras.CopyGraph(ctx, store, dst, root, oras.DefaultCopyOptions.CopyGraphOptions); err != nil {
-		return errors.Wrapf(err, "copying graph into %s", odir)
+	if _, err := oras.Copy(ctx, store, root.Digest.String(), dst, ver, oras.DefaultCopyOptions); err != nil {
+		return errors.Wrapf(err, "copying into %s", odir)
 	}
 
 	return nil
