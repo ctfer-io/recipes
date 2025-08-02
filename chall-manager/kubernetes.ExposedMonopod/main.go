@@ -5,30 +5,14 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/pkg/errors"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+
 	"github.com/ctfer-io/chall-manager/sdk"
 	k8s "github.com/ctfer-io/chall-manager/sdk/kubernetes"
 	"github.com/ctfer-io/recipes"
-	"github.com/pkg/errors"
-	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/ctfer-io/recipes/chall-manager/kubernetes.ExposedMonopod/config"
 )
-
-// Config combines all possibile inputs to this recipe.
-type Config struct {
-	Image              string            `form:"image"`
-	Ports              []PortArgs        `form:"ports"`
-	Hostname           string            `form:"hostname"`
-	Files              map[string]string `form:"files"`
-	IngressAnnotations map[string]string `form:"ingressAnnotations"`
-	IngressNamespace   string            `form:"ingressNamespace"`
-	IngressLabels      map[string]string `form:"ingressLabels"`
-	ConnectionInfo     string            `form:"connectionInfo"`
-}
-
-type PortArgs struct {
-	Port       int            `form:"port"`
-	Protocol   string         `form:"protocol"`
-	ExposeType k8s.ExposeType `form:"exposeType"`
-}
 
 // Values are used as part of the templating of Config.ConnectionInfo.
 type Values struct {
@@ -36,7 +20,7 @@ type Values struct {
 }
 
 func main() {
-	recipes.Run(func(req *recipes.Request[Config], resp *sdk.Response, opts ...pulumi.ResourceOption) error {
+	recipes.Run(func(req *recipes.Request[config.Config], resp *sdk.Response, opts ...pulumi.ResourceOption) error {
 		// Build template ASAP -> fail fast
 		citmpl, err := template.New("connectionInfo").
 			Funcs(sprig.FuncMap()).
