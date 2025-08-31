@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/ctfer-io/chall-manager/sdk v0.5.1
+	github.com/ctfer-io/chall-manager/sdk v0.5.2
 	github.com/go-playground/form/v4 v4.2.1
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/pkg/errors v0.9.1
@@ -139,8 +139,8 @@ require (
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	k8s.io/api v0.33.3 // indirect
-	k8s.io/apimachinery v0.33.3 // indirect
+	k8s.io/api v0.33.4 // indirect
+	k8s.io/apimachinery v0.33.4 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect
 	lukechampine.com/frand v1.4.2 // indirect

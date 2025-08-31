@@ -6,18 +6,24 @@ import (
 
 // Config combines all possibile inputs to this recipe.
 type Config struct {
-	Image              string            `form:"image"`
-	Ports              []PortArgs        `form:"ports"`
-	Hostname           string            `form:"hostname"`
-	Files              map[string]string `form:"files"`
-	IngressAnnotations map[string]string `form:"ingressAnnotations"`
-	IngressNamespace   string            `form:"ingressNamespace"`
-	IngressLabels      map[string]string `form:"ingressLabels"`
-	ConnectionInfo     string            `form:"connectionInfo"`
+	// Inputs
+
+	Image            string            `form:"image"`
+	Ports            []PortArgs        `form:"ports"`
+	Hostname         string            `form:"hostname"`
+	Files            map[string]string `form:"files"`
+	FromCIDR         string            `form:"fromCidr"`
+	IngressNamespace string            `form:"ingressNamespace"`
+	IngressLabels    map[string]string `form:"ingressLabels"`
+
+	// Outputs
+
+	ConnectionInfo string `form:"connectionInfo"`
 }
 
 type PortArgs struct {
-	Port       int            `form:"port"`
-	Protocol   string         `form:"protocol"`
-	ExposeType k8s.ExposeType `form:"exposeType"`
+	Port        int               `form:"port"`
+	Protocol    string            `form:"protocol"`
+	ExposeType  k8s.ExposeType    `form:"exposeType"`
+	Annotations map[string]string `form:"annotations"`
 }

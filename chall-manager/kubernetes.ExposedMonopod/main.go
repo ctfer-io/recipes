@@ -32,26 +32,27 @@ func main() {
 		// Deploy k8s.ExposedMonopod
 		cm, err := k8s.NewExposedMonopod(req.Ctx, "recipe-e1p", &k8s.ExposedMonopodArgs{
 			Identity: pulumi.String(req.Identity),
-			Hostname: pulumi.String(req.Config.Hostname),
 			Label:    pulumi.String(req.Ctx.Stack()),
+			Hostname: pulumi.String(req.Config.Hostname),
 			Container: k8s.ContainerArgs{
 				Image: pulumi.String(req.Config.Image),
 				Ports: func() k8s.PortBindingArray {
 					out := make([]k8s.PortBindingInput, 0, len(req.Config.Ports))
 					for _, port := range req.Config.Ports {
 						out = append(out, k8s.PortBindingArgs{
-							Port:       pulumi.Int(port.Port),
-							Protocol:   pulumi.String(port.Protocol),
-							ExposeType: port.ExposeType,
+							Port:        pulumi.Int(port.Port),
+							Protocol:    pulumi.String(port.Protocol),
+							ExposeType:  port.ExposeType,
+							Annotations: pulumi.ToStringMap(port.Annotations),
 						})
 					}
 					return out
 				}(),
 				Files: pulumi.ToStringMap(req.Config.Files),
 			},
-			IngressAnnotations: pulumi.ToStringMap(req.Config.IngressAnnotations),
-			IngressNamespace:   pulumi.String(req.Config.IngressNamespace),
-			IngressLabels:      pulumi.ToStringMap(req.Config.IngressLabels),
+			FromCIDR:         pulumi.String(req.Config.FromCIDR),
+			IngressNamespace: pulumi.String(req.Config.IngressNamespace),
+			IngressLabels:    pulumi.ToStringMap(req.Config.IngressLabels),
 		}, opts...)
 		if err != nil {
 			return err
