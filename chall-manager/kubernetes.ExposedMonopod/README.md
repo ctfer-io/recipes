@@ -13,9 +13,12 @@ It does not add more values to it, but enable parametrizing inputs and outputs f
 |---|---|
 | `image` | **Required**. The Docker image reference to deploy. |
 | `ports[x].port` | At least one port is required. Define the ports, protocols and expose type for the container. |
+| `ports[x].protocol` | The protocol to expose the port on. |
+| `ports[x].exposeType` | The kind of exposure for this port/protocol couple. |
+| `ports[x].annotations` | A k=v map of annotations to pass to the exposing resource of this port/protocol couple. |
 | `hostname` | **Required**. The hostname to use as part of URLs in the connection info. |
-| `files` | The files to mount and on which path. |
-| `ingressAnnotations` | The ingress annotations to use. |
+| `files` | Files to mount as path, for a content (k=v map). |
+| `fromCidr` | A CIDR from which to limit restrein access to the challenge. |
 | `ingressNamespace` | The namespace of the ingress controller to grant network access from. Required if any port is use `exposeType=Ingress`. |
 | `ingressLabels` | **Required**. The labels of the ingress controller pods to grant network access from. Required if any port is use `exposeType=Ingress`. |
 
