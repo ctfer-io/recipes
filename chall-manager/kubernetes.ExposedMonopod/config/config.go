@@ -10,6 +10,7 @@ type Config struct {
 
 	Image            string            `form:"image"`
 	Ports            []PortArgs        `form:"ports"`
+	Envs             map[string]string `form:"envs"`
 	Hostname         string            `form:"hostname"`
 	Files            map[string]string `form:"files"`
 	FromCIDR         string            `form:"fromCidr"`

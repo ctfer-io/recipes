@@ -48,6 +48,13 @@ func main() {
 					}
 					return out
 				}(),
+				Envs: func() k8s.PrinterMap {
+					out := map[string]k8s.PrinterInput{}
+					for k, v := range req.Config.Envs {
+						out[k] = k8s.NewPrinter(v)
+					}
+					return out
+				}(),
 				Files: pulumi.ToStringMap(req.Config.Files),
 			},
 			FromCIDR:         pulumi.String(req.Config.FromCIDR),
