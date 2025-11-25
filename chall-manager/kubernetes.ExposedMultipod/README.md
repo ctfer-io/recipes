@@ -37,7 +37,7 @@ Notice that using Go templates and [`sprig`](https://masterminds.github.io/sprig
 Follows an example that is used for SSH-based connections, that is resilient to infrastructure errors.
 
 ```gotmpl
-{{- $hostport := index .URLs "8080/TCP" -}}
+{{- $hostport := index .URLs "app" "8080/TCP" -}}
 {{- $parts := splitList ":" $hostport -}}
 {{- $host := "" -}}
 {{- $port := "" -}}
