@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/ctfer-io/chall-manager/pkg/scenario"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -54,16 +53,9 @@ func main() {
 
 func run(ctx context.Context) (err error) {
 	// Login to Docker Hub
-	dhPat = os.Getenv("DOCKERHUB_PAT")
+	dhPat = strings.TrimSpace(os.Getenv("DOCKERHUB_PAT"))
 	if dhPat == "" {
 		log.Fatal("Docker Hub PAT token is empty...")
-	}
-
-	{
-		h := sha256.New()
-		_, _ = h.Write([]byte(dhPat))
-		sum := h.Sum(nil)
-		fmt.Printf("Hash 256 of PAT token: %s\n", hex.EncodeToString(sum))
 	}
 
 	dhClient, err = Login(ctx, "ctferio", dhPat)
@@ -388,7 +380,6 @@ func (c *DockerHubClient) createRepo(ctx context.Context, name, description stri
 		"name":        name,
 		"description": description,
 	})
-	fmt.Printf("b: %s\n", b)
 	req, _ := http.NewRequestWithContext(ctx,
 		"POST",
 		"https://hub.docker.com/v2/repositories/",
