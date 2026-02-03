@@ -14,7 +14,7 @@
 > [!CAUTION]
 > Recipes are **highly experimental** thus are subject to major refactoring and breaking changes.
 
-The recipes avoid reinventing the wheel for common stuff, like deploying a container in Kubernetes, with no need for re-compiling: we distribute OCI scenarios as [release artifacts](https://github.com/ctfer-io/recipes/releases) ! 🎉
+The recipes avoid reinventing the wheel for common stuff, like deploying a container in Kubernetes, with no need for re-compiling: we distribute OCI scenarios [on Docker Hub](https://hub.docker.com/u/ctferio?page=1&search=recipes) and as [release artifacts](https://github.com/ctfer-io/recipes/releases) ! 🎉
 
 ## Load into OCI registry
 
