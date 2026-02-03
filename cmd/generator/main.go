@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -55,6 +56,13 @@ func run(ctx context.Context) (err error) {
 	dhPat = os.Getenv("DOCKERHUB_PAT")
 	if dhPat == "" {
 		log.Fatal("Docker Hub PAT token is empty...")
+	}
+
+	{
+		h := sha256.New()
+		_, _ = h.Write([]byte(dhPat))
+		str := h.Sum(nil)
+		fmt.Printf("Hash 256 of PAT token: %s\n", str)
 	}
 
 	dhClient, err = Login(ctx, "ctferio", dhPat)
