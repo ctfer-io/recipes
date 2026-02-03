@@ -82,8 +82,17 @@ func run(ctx context.Context) (err error) {
 			dir := filepath.Join(eco, e.Name())
 			fmt.Printf("[+] Building %s@%s\n", dir, ver)
 
+			// Into which compressed archive
 			into := filepath.Join(dist, fmt.Sprintf("%s_%s_%s.oci.tar.gz", eco, e.Name(), ver))
-			dhRepoName := fmt.Sprintf("recipes_%s_%s", eco, e.Name())
+
+			// Transform into a Docker-compliant name
+			sub := e.Name()
+			sub = strings.ToLower(sub)
+			sub = strings.NewReplacer(
+				".", "-",
+			).Replace(sub)
+			dhRepoName := fmt.Sprintf("recipes_%s_%s", eco, sub)
+
 			if err := build(ctx, dir, into, dhRepoName, ver); err != nil {
 				return errors.Wrapf(err, "failed to build %s", dir)
 			}
@@ -295,7 +304,7 @@ func compress(path, target string) error {
 
 func dhubPush(ctx context.Context, dir, repoName, version string) error {
 	// Create the repository if does not exist already
-	if err := dhClient.UpsertRepo(ctx, repoName); err != nil {
+	if err := dhClient.UpsertRepo(ctx, dir, repoName); err != nil {
 		return errors.Wrapf(err, "upserting ctferio/%s", repoName)
 	}
 
@@ -342,7 +351,7 @@ func Login(ctx context.Context, username, password string) (*DockerHubClient, er
 	return &DockerHubClient{token: out.Token}, nil
 }
 
-func (c *DockerHubClient) UpsertRepo(ctx context.Context, name string) error {
+func (c *DockerHubClient) UpsertRepo(ctx context.Context, dir, name string) error {
 	exist, err := c.repoExists(ctx, name)
 	if err != nil {
 		return err
@@ -350,7 +359,7 @@ func (c *DockerHubClient) UpsertRepo(ctx context.Context, name string) error {
 	if exist {
 		return nil
 	}
-	return c.createRepo(ctx, name, "Generated from Recipes...") // TODO generate description to target URL
+	return c.createRepo(ctx, name, fmt.Sprintf("Generated from https://github.com/ctfer-io/recipes/blob/main/%s", dir))
 }
 
 func (c *DockerHubClient) repoExists(ctx context.Context, name string) (bool, error) {

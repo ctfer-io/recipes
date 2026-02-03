@@ -18,7 +18,22 @@ The recipes avoid reinventing the wheel for common stuff, like deploying a conta
 
 ## Load into OCI registry
 
-The following example focus on how to download the `debug` recipe then load it into an OCI registry.
+### From Docker Hub
+
+You can [find the recipes images on our Docker Hub](https://hub.docker.com/u/ctferio?page=1&search=recipes).
+
+Then, simply copy it where you need!
+```bash
+oras cp <image_from_docker_hub> <image_to_your_registry> 
+```
+
+Of course, you can directly use it for simplicity.
+
+That's all :stuck_out_tongue_winking_eye::muscle:
+
+### From GitHub release assets
+
+The following example focus on how to download the `debug` recipe then load it into an OCI registry, from a GitHub release asset.
 All commands should **run in the same terminal**.
 
 Requirements:
@@ -46,5 +61,3 @@ Requirements:
     export REGISTRY="localhost:5000"
     oras cp --from-oci-layout "./${DIR}:${LATEST}" "${REGISTRY}/debug:${LATEST}"
     ```
-
-That's it 😉
