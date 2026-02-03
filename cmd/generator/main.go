@@ -388,7 +388,7 @@ func (c *DockerHubClient) createRepo(ctx context.Context, name, description stri
 		"name":        name,
 		"description": description,
 	})
-	fmt.Printf("b: %v\n", b)
+	fmt.Printf("b: %s\n", b)
 	req, _ := http.NewRequestWithContext(ctx,
 		"POST",
 		"https://hub.docker.com/v2/repositories/",
