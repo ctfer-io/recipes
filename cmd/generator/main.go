@@ -321,11 +321,16 @@ func Login(ctx context.Context, username, password string) (*DockerHubClient, er
 		"https://hub.docker.com/v2/users/login/",
 		bytes.NewReader(b),
 	)
+	req.Header.Set("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("login failed, got status %s", resp.Status)
+	}
 
 	var out struct {
 		Token string `json:"token"`
