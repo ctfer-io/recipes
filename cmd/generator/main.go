@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -61,8 +62,8 @@ func run(ctx context.Context) (err error) {
 	{
 		h := sha256.New()
 		_, _ = h.Write([]byte(dhPat))
-		str := h.Sum(nil)
-		fmt.Printf("Hash 256 of PAT token: %s\n", str)
+		sum := h.Sum(nil)
+		fmt.Printf("Hash 256 of PAT token: %s\n", hex.EncodeToString(sum))
 	}
 
 	dhClient, err = Login(ctx, "ctferio", dhPat)
@@ -90,7 +91,7 @@ func run(ctx context.Context) (err error) {
 			fmt.Printf("[+] Building %s@%s\n", dir, ver)
 
 			into := filepath.Join(dist, fmt.Sprintf("%s_%s_%s.oci.tar.gz", eco, e.Name(), ver))
-			dhRepoName := fmt.Sprintf("%s_%s", eco, e.Name())
+			dhRepoName := fmt.Sprintf("recipes_%s_%s", eco, e.Name())
 			if err := build(ctx, dir, into, dhRepoName, ver); err != nil {
 				return errors.Wrapf(err, "failed to build %s", dir)
 			}
@@ -300,14 +301,14 @@ func compress(path, target string) error {
 	return tarfile.Close()
 }
 
-func dhubPush(ctx context.Context, dir, name, version string) error {
+func dhubPush(ctx context.Context, dir, repoName, version string) error {
 	// Create the repository if does not exist already
-	if err := dhClient.UpsertRepo(ctx, name); err != nil {
-		return errors.Wrapf(err, "upserting ctferio/%s", name)
+	if err := dhClient.UpsertRepo(ctx, repoName); err != nil {
+		return errors.Wrapf(err, "upserting ctferio/%s", repoName)
 	}
 
 	// Then push all through ORAS
-	ref := fmt.Sprintf("ctferio/%s:%s", name, version)
+	ref := fmt.Sprintf("ctferio/%s:%s", repoName, version)
 	if err := scenario.EncodeOCI(ctx, ref, dir, false, "ctferio", dhPat); err != nil {
 		return errors.Wrapf(err, "pushing %s", ref)
 	}
@@ -387,6 +388,7 @@ func (c *DockerHubClient) createRepo(ctx context.Context, name, description stri
 		"name":        name,
 		"description": description,
 	})
+	fmt.Printf("b: %v\n", b)
 	req, _ := http.NewRequestWithContext(ctx,
 		"POST",
 		"https://hub.docker.com/v2/repositories/",
