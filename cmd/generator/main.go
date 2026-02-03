@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -39,7 +40,7 @@ var (
 	}
 
 	dhClient *DockerHubClient
-	dhPat    = os.Getenv("DOCKERHUB_PAT")
+	dhPat    string
 )
 
 func main() {
@@ -51,6 +52,11 @@ func main() {
 
 func run(ctx context.Context) (err error) {
 	// Login to Docker Hub
+	dhPat = os.Getenv("DOCKERHUB_PAT")
+	if dhPat == "" {
+		log.Fatal("Docker Hub PAT token is empty...")
+	}
+
 	dhClient, err = Login(ctx, "ctferio", dhPat)
 	if err != nil {
 		return err
@@ -289,11 +295,15 @@ func compress(path, target string) error {
 func dhubPush(ctx context.Context, dir, name, version string) error {
 	// Create the repository if does not exist already
 	if err := dhClient.UpsertRepo(ctx, name); err != nil {
-		return err
+		return errors.Wrapf(err, "upserting ctferio/%s", name)
 	}
 
 	// Then push all through ORAS
-	return scenario.EncodeOCI(ctx, fmt.Sprintf("ctferio/%s:%s", name, version), dir, false, "ctferio", dhPat)
+	ref := fmt.Sprintf("ctferio/%s:%s", name, version)
+	if err := scenario.EncodeOCI(ctx, ref, dir, false, "ctferio", dhPat); err != nil {
+		return errors.Wrapf(err, "pushing %s", ref)
+	}
+	return nil
 }
 
 type DockerHubClient struct {

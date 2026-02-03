@@ -43,7 +43,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build OCI tar.gz recipes
+      - name: Build OCI and tar.gz recipes
         run: |
           go run cmd/generator/main.go
         env:
