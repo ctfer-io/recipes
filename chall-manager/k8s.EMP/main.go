@@ -58,7 +58,9 @@ func main() {
 							}
 							return out
 						}(),
-						Files: pulumi.ToStringMap(args.Files),
+						Files:       pulumi.ToStringMap(args.Files),
+						LimitCPU:    pulumi.StringPtrFromPtr(args.LimitCPU),
+						LimitMemory: pulumi.StringPtrFromPtr(args.LimitMemory),
 					}
 				}
 				return out

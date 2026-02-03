@@ -22,6 +22,8 @@ It does not add more values to it, but enable parametrizing inputs and outputs f
 | `fromCidr` | A CIDR from which to limit restrein access to the challenge. |
 | `ingressNamespace` | The namespace of the ingress controller to grant network access from. Required if any port is use `exposeType=Ingress`. |
 | `ingressLabels` | The labels of the ingress controller pods to grant network access from. Required if any port is use `exposeType=Ingress`. |
+| `limitCpu` | The limit of CPU usage. Optional, yet recommended. |
+| `limitMemory` | The limit of memory usage. Optional, yet recommended. |
 
 ## Outputs
 

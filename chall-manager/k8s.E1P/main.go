@@ -55,7 +55,9 @@ func main() {
 					}
 					return out
 				}(),
-				Files: pulumi.ToStringMap(req.Config.Files),
+				Files:       pulumi.ToStringMap(req.Config.Files),
+				LimitCPU:    pulumi.StringPtrFromPtr(req.Config.LimitCPU),
+				LimitMemory: pulumi.StringPtrFromPtr(req.Config.LimitMemory),
 			},
 			FromCIDR:         pulumi.String(req.Config.FromCIDR),
 			IngressNamespace: pulumi.String(req.Config.IngressNamespace),

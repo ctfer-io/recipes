@@ -18,6 +18,8 @@ It does not add more values to it, but enable parametrizing inputs and outputs f
 | `containers[xxx].ports[x].annotations` | A k=v map of annotations to pass to the exposing resource of this port/protocol couple. |
 | `containers[xxx].envs` | A k=v map of environment variables to pass to the container. |
 | `containers[xxx].files` | A k=v map of file path and content to mount in the container. |
+| `containers[xxx].limitCpu` | The limit of CPU usage. Optional, yet recommended. |
+| `containers[xxx].limitMemory` | The limit of memory usage. Optional, yet recommended. |
 | `rules[x].from` | The container name from which to grant network interaction. |
 | `rules[x].to` | The container name to which grant network interaction. |
 | `rules[x].on` | The port to which grant network interaction. |

@@ -16,6 +16,8 @@ type Config struct {
 	FromCIDR         string            `form:"fromCidr"`
 	IngressNamespace string            `form:"ingressNamespace"`
 	IngressLabels    map[string]string `form:"ingressLabels"`
+	LimitCPU         *string           `form:"limitCpu"`
+	LimitMemory      *string           `form:"limitMemory"`
 
 	// Outputs
 

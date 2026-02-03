@@ -20,10 +20,12 @@ type Config struct {
 }
 
 type ContainerArgs struct {
-	Image string            `form:"image"`
-	Ports []e1p.PortArgs    `form:"ports"`
-	Envs  map[string]string `form:"envs"`
-	Files map[string]string `form:"files"`
+	Image       string            `form:"image"`
+	Ports       []e1p.PortArgs    `form:"ports"`
+	Envs        map[string]string `form:"envs"`
+	Files       map[string]string `form:"files"`
+	LimitCPU    *string           `form:"limitCpu"`
+	LimitMemory *string           `form:"limitMemory"`
 }
 
 type RuleArgs struct {
