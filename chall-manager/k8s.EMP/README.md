@@ -1,4 +1,4 @@
-# Kubernetes ExposedMultipod
+# Kubernetes ExposedMultipod (k8s.EMP)
 
 This recipe is based upon [Chall-Manager ExposedMultipod SDK binding](https://github.com/ctfer-io/chall-manager/blob/main/sdk/kubernetes/exposed-multipod.go).
 It does not add more values to it, but enable parametrizing inputs and outputs formats through additional values.

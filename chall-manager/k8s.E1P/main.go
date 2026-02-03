@@ -11,7 +11,7 @@ import (
 	"github.com/ctfer-io/chall-manager/sdk"
 	k8s "github.com/ctfer-io/chall-manager/sdk/kubernetes"
 	"github.com/ctfer-io/recipes"
-	"github.com/ctfer-io/recipes/chall-manager/kubernetes.ExposedMonopod/config"
+	"github.com/ctfer-io/recipes/chall-manager/k8s.E1P/config"
 )
 
 // Values are used as part of the templating of Config.ConnectionInfo.
@@ -30,7 +30,7 @@ func main() {
 		}
 
 		// Deploy k8s.ExposedMonopod
-		cm, err := k8s.NewExposedMonopod(req.Ctx, "recipe-e1p", &k8s.ExposedMonopodArgs{
+		cm, err := k8s.NewExposedMonopod(req.Ctx, "recipe-k8s-e1p", &k8s.ExposedMonopodArgs{
 			Identity: pulumi.String(req.Identity),
 			Label:    pulumi.String(req.Ctx.Stack()),
 			Hostname: pulumi.String(req.Config.Hostname),

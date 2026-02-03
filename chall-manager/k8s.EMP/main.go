@@ -11,7 +11,7 @@ import (
 	"github.com/ctfer-io/chall-manager/sdk"
 	k8s "github.com/ctfer-io/chall-manager/sdk/kubernetes"
 	"github.com/ctfer-io/recipes"
-	"github.com/ctfer-io/recipes/chall-manager/kubernetes.ExposedMultipod/config"
+	"github.com/ctfer-io/recipes/chall-manager/k8s.EMP/config"
 )
 
 // Values are used as part of the templating of Config.ConnectionInfo.
@@ -30,7 +30,7 @@ func main() {
 		}
 
 		// Deploy k8s.ExposedMultipod
-		cm, err := k8s.NewExposedMultipod(req.Ctx, "recipe-emp", &k8s.ExposedMultipodArgs{
+		cm, err := k8s.NewExposedMultipod(req.Ctx, "recipe-k8s-emp", &k8s.ExposedMultipodArgs{
 			Identity: pulumi.String(req.Identity),
 			Label:    pulumi.String(req.Ctx.Stack()),
 			Hostname: pulumi.String(req.Config.Hostname),

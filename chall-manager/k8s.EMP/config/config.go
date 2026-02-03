@@ -1,7 +1,7 @@
 package config
 
 import (
-	e1p "github.com/ctfer-io/recipes/chall-manager/kubernetes.ExposedMonopod/config"
+	e1p "github.com/ctfer-io/recipes/chall-manager/k8s.E1P/config"
 )
 
 type Config struct {

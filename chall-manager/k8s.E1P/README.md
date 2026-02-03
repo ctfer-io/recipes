@@ -1,4 +1,4 @@
-# Kubernetes ExposedMonopod
+# Kubernetes ExposedMonopod (k8s.E1P)
 
 This recipe is based upon [Chall-Manager ExposedMonopod SDK binding](https://github.com/ctfer-io/chall-manager/blob/main/sdk/kubernetes/exposed-monopod.go).
 It does not add more values to it, but enable parametrizing inputs and outputs formats through additional values.
