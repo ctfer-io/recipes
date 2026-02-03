@@ -2,14 +2,18 @@ package main
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 
+	"github.com/ctfer-io/chall-manager/pkg/scenario"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/workspace"
@@ -33,6 +37,9 @@ var (
 	ecosystems = []string{
 		"chall-manager",
 	}
+
+	dhClient *DockerHubClient
+	dhPat    = os.Getenv("DOCKERHUB_PAT")
 )
 
 func main() {
@@ -42,7 +49,13 @@ func main() {
 	}
 }
 
-func run(ctx context.Context) error {
+func run(ctx context.Context) (err error) {
+	// Login to Docker Hub
+	dhClient, err = Login(ctx, "ctferio", dhPat)
+	if err != nil {
+		return err
+	}
+
 	// Create root directory in which to export OCI recipes
 	_ = os.Mkdir(dist, os.ModePerm)
 
@@ -63,7 +76,8 @@ func run(ctx context.Context) error {
 			fmt.Printf("[+] Building %s@%s\n", dir, ver)
 
 			into := filepath.Join(dist, fmt.Sprintf("%s_%s_%s.oci.tar.gz", eco, e.Name(), ver))
-			if err := build(ctx, dir, into, ver); err != nil {
+			dhRepoName := fmt.Sprintf("%s_%s", eco, e.Name())
+			if err := build(ctx, dir, into, dhRepoName, ver); err != nil {
 				return errors.Wrapf(err, "failed to build %s", dir)
 			}
 			fmt.Printf("    Exported to %s\n", into)
@@ -78,19 +92,23 @@ type BuildEntry struct {
 	Digest string
 }
 
-func build(ctx context.Context, dir, into, ver string) error {
+func build(ctx context.Context, dir, into, dhRepoName, ver string) error {
 	// Compile Go binary
 	if err := compile(ctx, dir); err != nil {
 		return err
 	}
 
-	// Then pack it all in an OCI layout in filesystem
+	// Then pack it all in an OCI layout in filesystem ...
 	if err := ociLayout(ctx, dir, ver); err != nil {
 		return err
 	}
+	// ... and compress it in a tag.gz
+	if err := compress(dir, into); err != nil {
+		return err
+	}
 
-	// Compress it in a tar.gz and compute its sha256 sum
-	return compress(dir, into)
+	// Push it to Docker Hub
+	return dhubPush(ctx, dir, dhRepoName, ver)
 }
 
 func compile(ctx context.Context, dir string) error {
@@ -266,4 +284,109 @@ func compress(path, target string) error {
 		return err
 	}
 	return tarfile.Close()
+}
+
+func dhubPush(ctx context.Context, dir, name, version string) error {
+	// Create the repository if does not exist already
+	if err := dhClient.UpsertRepo(ctx, name); err != nil {
+		return err
+	}
+
+	// Then push all through ORAS
+	return scenario.EncodeOCI(ctx, fmt.Sprintf("ctferio/%s:%s", name, version), dir, false, "ctferio", dhPat)
+}
+
+type DockerHubClient struct {
+	token string
+}
+
+func Login(ctx context.Context, username, password string) (*DockerHubClient, error) {
+	b, _ := json.Marshal(map[string]string{
+		"username": username,
+		"password": password,
+	})
+	req, _ := http.NewRequestWithContext(ctx,
+		http.MethodPost,
+		"https://hub.docker.com/v2/users/login/",
+		bytes.NewReader(b),
+	)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var out struct {
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+
+	return &DockerHubClient{token: out.Token}, nil
+}
+
+func (c *DockerHubClient) UpsertRepo(ctx context.Context, name string) error {
+	exist, err := c.repoExists(ctx, name)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return nil
+	}
+	return c.createRepo(ctx, name, "Generated from Recipes...") // TODO generate description to target URL
+}
+
+func (c *DockerHubClient) repoExists(ctx context.Context, name string) (bool, error) {
+	req, _ := http.NewRequestWithContext(ctx,
+		http.MethodGet,
+		fmt.Sprintf("https://hub.docker.com/v2/repositories/ctferio/%s/", name),
+		nil,
+	)
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	}
+	if resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+
+	return false, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+}
+
+func (c *DockerHubClient) createRepo(ctx context.Context, name, description string) error {
+	b, _ := json.Marshal(map[string]any{
+		"registry":    "docker",
+		"namespace":   "ctferio",
+		"is_private":  false,
+		"name":        name,
+		"description": description,
+	})
+	req, _ := http.NewRequestWithContext(ctx,
+		"POST",
+		"https://hub.docker.com/v2/repositories/",
+		bytes.NewReader(b),
+	)
+	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to create repo: %s", body)
+	}
+
+	return nil
 }
