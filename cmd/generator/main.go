@@ -300,7 +300,7 @@ func dhubPush(ctx context.Context, dir, repoName, version string) error {
 	}
 
 	// Then push all through ORAS
-	ref := fmt.Sprintf("ctferio/%s:%s", repoName, version)
+	ref := fmt.Sprintf("docker.io/ctferio/%s:%s", repoName, version)
 	if err := scenario.EncodeOCI(ctx, ref, dir, false, "ctferio", dhPat); err != nil {
 		return errors.Wrapf(err, "pushing %s", ref)
 	}
