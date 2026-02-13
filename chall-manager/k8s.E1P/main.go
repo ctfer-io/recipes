@@ -55,7 +55,13 @@ func main() {
 					}
 					return out
 				}(),
-				Files:       pulumi.ToStringMap(req.Config.Files),
+				Files: func() pulumi.StringMap {
+					files := map[string]string{}
+					for path, f := range req.Config.Files {
+						files[path] = f.Produce(req.Identity)
+					}
+					return pulumi.ToStringMap(files)
+				}(),
 				LimitCPU:    pulumi.StringPtrFromPtr(req.Config.LimitCPU),
 				LimitMemory: pulumi.StringPtrFromPtr(req.Config.LimitMemory),
 			},
