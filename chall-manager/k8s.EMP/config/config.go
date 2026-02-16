@@ -2,6 +2,8 @@ package config
 
 import (
 	"github.com/ctfer-io/recipes/chall-manager/common"
+
+	k8s "github.com/ctfer-io/chall-manager/sdk/kubernetes"
 )
 
 type Config struct {
@@ -22,7 +24,7 @@ type Config struct {
 type ContainerArgs struct {
 	Image    string                     `form:"image"       json:"image"`
 	Ports    []common.PortArgs          `form:"ports"       json:"ports"`
-	Envs     map[string]common.Variable `form:"envs"        json:"envs"`
+	Envs     map[string]Printable       `form:"envs"        json:"envs"`
 	Files    map[string]common.Variable `form:"files"       json:"files"`
 	Requests map[string]string          `form:"requests"    json:"requests"`
 	Limits   map[string]string          `form:"limits"      json:"limits"`
@@ -33,4 +35,18 @@ type RuleArgs struct {
 	To       string `form:"to"       json:"to"`
 	On       int    `form:"on"       json:"on"`
 	Protocol string `form:"protocol" json:"protocol"`
+}
+
+type Printable struct {
+	Variable common.Variable `form:"variable" json:"variable"`
+
+	Format   string   `form:"format"   json:"format"`
+	Serivces []string `form:"services" json:"services"`
+}
+
+func (pr Printable) ToPrinter(seed string) k8s.PrinterArgs {
+	if pr.Variable.Content != "" {
+		return k8s.NewPrinter(pr.Variable.Produce(seed))
+	}
+	return k8s.NewPrinter(pr.Format, pr.Serivces...)
 }

@@ -54,7 +54,7 @@ func main() {
 						Envs: func() k8s.PrinterMap {
 							out := map[string]k8s.PrinterInput{}
 							for k, v := range args.Envs {
-								out[k] = k8s.NewPrinter(v.Produce(req.Identity))
+								out[k] = v.ToPrinter(req.Identity)
 							}
 							return out
 						}(),
