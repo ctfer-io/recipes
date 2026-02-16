@@ -51,7 +51,7 @@ func main() {
 				Envs: func() k8s.PrinterMap {
 					out := map[string]k8s.PrinterInput{}
 					for k, v := range req.Config.Envs {
-						out[k] = k8s.NewPrinter(v)
+						out[k] = k8s.NewPrinter(v.Produce(req.Identity))
 					}
 					return out
 				}(),
@@ -62,8 +62,8 @@ func main() {
 					}
 					return pulumi.ToStringMap(files)
 				}(),
-				LimitCPU:    pulumi.StringPtrFromPtr(req.Config.LimitCPU),
-				LimitMemory: pulumi.StringPtrFromPtr(req.Config.LimitMemory),
+				Requests: pulumi.ToStringMap(req.Config.Requests),
+				Limits:   pulumi.ToStringMap(req.Config.Limits),
 			},
 			FromCIDR:         pulumi.String(req.Config.FromCIDR),
 			IngressNamespace: pulumi.String(req.Config.IngressNamespace),

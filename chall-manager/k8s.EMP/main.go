@@ -54,13 +54,19 @@ func main() {
 						Envs: func() k8s.PrinterMap {
 							out := map[string]k8s.PrinterInput{}
 							for k, v := range args.Envs {
-								out[k] = k8s.NewPrinter(v)
+								out[k] = k8s.NewPrinter(v.Produce(req.Identity))
 							}
 							return out
 						}(),
-						Files:       pulumi.ToStringMap(args.Files),
-						LimitCPU:    pulumi.StringPtrFromPtr(args.LimitCPU),
-						LimitMemory: pulumi.StringPtrFromPtr(args.LimitMemory),
+						Files: func() pulumi.StringMap {
+							files := map[string]string{}
+							for path, f := range args.Files {
+								files[path] = f.Produce(req.Identity)
+							}
+							return pulumi.ToStringMap(files)
+						}(),
+						Requests: pulumi.ToStringMap(args.Requests),
+						Limits:   pulumi.ToStringMap(args.Limits),
 					}
 				}
 				return out
