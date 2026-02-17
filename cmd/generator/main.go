@@ -43,6 +43,11 @@ var (
 		"chall-manager",
 	}
 
+	preparedFiles = []string{
+		"main",
+		"Pulumi.yaml",
+	}
+
 	dhClient *DockerHubClient
 	dhPat    string
 )
@@ -148,12 +153,29 @@ func compile(ctx context.Context, dir string) error {
 }
 
 func ociLayout(ctx context.Context, dir, ver string) error {
+	// Prepare the Pulumi.yaml file with the prebuilt content
 	if err := preparePulumiYaml(dir); err != nil {
 		return errors.Wrap(err, "preparing Pulumi.yaml")
 	}
 
+	// Copy prepared data into a clean directory
+	tmpDir := filepath.Join(os.TempDir(), dir)
+	tmp, err := os.Create(tmpDir)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = tmp.Close()
+	}()
+
+	for _, f := range preparedFiles {
+		if err := copyInto(filepath.Join(dir, f), tmpDir); err != nil {
+			return err
+		}
+	}
+
 	// Create new file fs
-	fs, err := file.New(dir)
+	fs, err := file.New(tmpDir)
 	if err != nil {
 		return errors.Wrapf(err, "creating file store in %s", dir)
 	}
@@ -161,7 +183,7 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 
 	// Add files
 	layers := []ocispec.Descriptor{}
-	for _, f := range []string{"main", "Pulumi.yaml"} {
+	for _, f := range preparedFiles {
 		layer, err := fs.Add(ctx, f, fileType, "")
 		if err != nil {
 			return errors.Wrapf(err, "adding file %s to ORAS file store", f)
@@ -197,6 +219,27 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 	}
 
 	return nil
+}
+
+func copyInto(path, dir string) error {
+	src, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = src.Close()
+	}()
+
+	dst, err := os.Create(filepath.Join(dir, filepath.Base(path)))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = dst.Close()
+	}()
+
+	_, err = io.Copy(dst, src)
+	return err
 }
 
 func preparePulumiYaml(dir string) error {
@@ -341,6 +384,8 @@ func dhubPush(ctx context.Context, dir, repoName, version string) error {
 			Password: dhPat,
 		}),
 	}
+
+	fmt.Printf("    Pushing %s\n", ref)
 	_, err = oras.Copy(ctx,
 		ociLayout, version, // from OCI layout
 		repo, version, // to DockerHub
