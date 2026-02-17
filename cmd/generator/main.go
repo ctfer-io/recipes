@@ -81,6 +81,10 @@ func run(ctx context.Context) (err error) {
 			if !e.IsDir() {
 				continue
 			}
+			// Skip commonly-used (shared) datastructures and helpers
+			if e.Name() == "common" {
+				continue
+			}
 
 			dir := filepath.Join(eco, e.Name())
 			fmt.Printf("[+] Building %s@%s\n", dir, ver)

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/ctfer-io/recipes/chall-manager/common"
+	common "github.com/ctfer-io/recipes/chall-manager/common"
 
 	k8s "github.com/ctfer-io/chall-manager/sdk/kubernetes"
 )
