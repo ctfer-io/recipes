@@ -162,10 +162,9 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 	// Add files
 	layers := []ocispec.Descriptor{}
 	for _, f := range []string{"main", "Pulumi.yaml"} {
-		rel, _ := filepath.Rel(dir, f)
-		layer, err := fs.Add(ctx, rel, fileType, "")
+		layer, err := fs.Add(ctx, f, fileType, "")
 		if err != nil {
-			return errors.Wrapf(err, "adding file %s to ORAS file store", rel)
+			return errors.Wrapf(err, "adding file %s to ORAS file store", f)
 		}
 		layers = append(layers, layer)
 	}
