@@ -160,7 +160,7 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 
 	// Copy prepared data into a clean directory
 	tmpDir := filepath.Join(os.TempDir(), dir)
-	if err := os.Mkdir(tmpDir, os.ModePerm); err != nil {
+	if err := os.MkdirAll(tmpDir, os.ModePerm); err != nil {
 		return err
 	}
 
