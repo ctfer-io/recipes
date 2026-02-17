@@ -140,16 +140,15 @@ func build(ctx context.Context, dir, into, dhRepoName, ver string) error {
 }
 
 func compile(ctx context.Context, dir string) error {
+	fmt.Println("    Compiling...")
 	cmd := exec.CommandContext(ctx, "go", "build", "-o", "main", "main.go")
 	cmd.Env = append(os.Environ(),
 		fmt.Sprintf("GOPROXY=%s", goproxy),
 	)
 	cmd.Dir = dir
 	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return errors.Wrapf(err, "output: %s", out)
-	}
-	return nil
+	fmt.Printf("    Compilation output: %s\n", out)
+	return err
 }
 
 func ociLayout(ctx context.Context, dir, ver string) error {

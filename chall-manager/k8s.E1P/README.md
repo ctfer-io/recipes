@@ -49,7 +49,7 @@ Follows an example that is used for SSH-based connections, that is resilient to 
 {{- end -}}
 
 {{- if and $host $port -}}
-ssh -p {{ $host }} {{ $port }}
+ssh -p {{ $port }} {{ $host }}
 {{- else -}}
 Host or port not available...
 {{- end -}}
