@@ -72,9 +72,7 @@ func run(ctx context.Context) (err error) {
 	}
 
 	// Create root directory in which to export OCI recipes
-	if err := os.Mkdir(dist, os.ModePerm); err != nil {
-		return err
-	}
+	_ = os.Mkdir(dist, os.ModePerm)
 
 	ver := os.Getenv("VERSION")
 
