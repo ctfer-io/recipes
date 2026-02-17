@@ -160,13 +160,9 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 
 	// Copy prepared data into a clean directory
 	tmpDir := filepath.Join(os.TempDir(), dir)
-	tmp, err := os.Create(tmpDir)
-	if err != nil {
+	if err := os.Mkdir(tmpDir, os.ModePerm); err != nil {
 		return err
 	}
-	defer func() {
-		_ = tmp.Close()
-	}()
 
 	for _, f := range preparedFiles {
 		if err := copyInto(filepath.Join(dir, f), tmpDir); err != nil {
