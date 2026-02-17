@@ -95,7 +95,7 @@ func run(ctx context.Context) (err error) {
 			fmt.Printf("[+] Building %s@%s\n", dir, ver)
 
 			// Into which compressed archive
-			into := filepath.Join(dist, fmt.Sprintf("%s_%s_%s.oci.tar.gz", eco, e.Name(), ver))
+			into := filepath.Join(dist, fmt.Sprintf("%s_%s_%s.tar.gz", eco, e.Name(), ver))
 
 			// Transform into a Docker-compliant name
 			sub := e.Name()

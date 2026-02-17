@@ -51,7 +51,7 @@ Requirements:
 
 2. Untar:
     ```bash
-    export DIR="debug-oci-layout"
+    export DIR="debug-scenario"
     mkdir -p "${DIR}"
     tar -xzf "recipes_debug_${LATEST}.oci.tar.gz" -C "${DIR}/"
     ```
@@ -59,5 +59,9 @@ Requirements:
 3. Copy to registry:
     ```bash
     export REGISTRY="localhost:5000"
-    oras cp --from-oci-layout "./${DIR}:${LATEST}" "${REGISTRY}/debug:${LATEST}"
+    oras push \
+        "${REGISTRY}/debug:${LATEST}" \
+        --artifact-type application/vnd.ctfer-io.scenario \
+	    --media-type application/vnd.ctfer-io.file \
+        $(find $DIR -type f)
     ```
