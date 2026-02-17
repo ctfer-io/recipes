@@ -130,13 +130,13 @@ func build(ctx context.Context, dir, into, dhRepoName, ver string) error {
 	if err := ociLayout(ctx, dir, ver); err != nil {
 		return err
 	}
-	// ... and compress it in a tag.gz
-	if err := compress(dir, into); err != nil {
+	// ... and push it to Docker Hub
+	if err := dhubPush(ctx, dir, dhRepoName, ver); err != nil {
 		return err
 	}
 
-	// Push it to Docker Hub
-	return dhubPush(ctx, dir, dhRepoName, ver)
+	// ... and compress it in a tag.gz
+	return compress(dir, into)
 }
 
 func compile(ctx context.Context, dir string) error {
@@ -357,7 +357,8 @@ func dhubPush(ctx context.Context, dir, repoName, version string) error {
 	}
 
 	// Load OCI layout that previous steps built
-	ociLayout, err := oci.New(filepath.Join(dir, dist))
+	odir := filepath.Join(dir, dist)
+	ociLayout, err := oci.New(odir)
 	if err != nil {
 		return err
 	}
@@ -382,12 +383,16 @@ func dhubPush(ctx context.Context, dir, repoName, version string) error {
 	}
 
 	fmt.Printf("    Pushing %s\n", ref)
-	_, err = oras.Copy(ctx,
+	if _, err := oras.Copy(ctx,
 		ociLayout, version, // from OCI layout
 		repo, version, // to DockerHub
 		oras.DefaultCopyOptions,
-	)
-	return err
+	); err != nil {
+		return err
+	}
+
+	// And delete the oci directory so it is cleaned up for compression
+	return os.RemoveAll(odir)
 }
 
 type DockerHubClient struct {
