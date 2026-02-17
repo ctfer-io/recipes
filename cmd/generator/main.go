@@ -15,15 +15,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ctfer-io/chall-manager/pkg/scenario"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/workspace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/multierr"
 	"gopkg.in/yaml.v3"
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content/file"
 	"oras.land/oras-go/v2/content/oci"
+	"oras.land/oras-go/v2/registry/remote"
+	"oras.land/oras-go/v2/registry/remote/auth"
+	"oras.land/oras-go/v2/registry/remote/retry"
 )
 
 const (
@@ -141,37 +144,40 @@ func compile(ctx context.Context, dir string) error {
 }
 
 func ociLayout(ctx context.Context, dir, ver string) error {
-	// Create new file store
-	store, err := file.New(dir)
-	if err != nil {
-		return errors.Wrapf(err, "creating file store in %s", dir)
-	}
-	defer func() { _ = store.Close() }()
-
-	// Add files
 	if err := preparePulumiYaml(dir); err != nil {
 		return errors.Wrap(err, "preparing Pulumi.yaml")
 	}
+
+	// Create new file fs
+	fs, err := file.New(dir)
+	if err != nil {
+		return errors.Wrapf(err, "creating file store in %s", dir)
+	}
+	defer func() { _ = fs.Close() }()
+
+	// Add files
 	layers := []ocispec.Descriptor{}
 	for _, f := range []string{"main", "Pulumi.yaml"} {
-		desc, err := store.Add(ctx, f, fileType, f)
+		rel, _ := filepath.Rel(dir, f)
+		layer, err := fs.Add(ctx, rel, fileType, "")
 		if err != nil {
-			return errors.Wrapf(err, "adding file %s to ORAS file store", f)
+			return errors.Wrapf(err, "adding file %s to ORAS file store", rel)
 		}
-		layers = append(layers, desc)
+		layers = append(layers, layer)
 	}
 
 	// Pack the manifest in store
-	root, err := oras.PackManifest(ctx, store, oras.PackManifestVersion1_1, scenarioType, oras.PackManifestOptions{
-		Layers: layers,
-	})
+	root, err := oras.PackManifest(ctx, fs,
+		oras.PackManifestVersion1_1,
+		scenarioType,
+		oras.PackManifestOptions{Layers: layers})
 	if err != nil {
 		return errors.Wrap(err, "packing manifest")
 	}
 
 	// Tag the memory store
 	fmt.Printf("    Digest: %s\n", root.Digest)
-	if err := store.Tag(ctx, root, root.Digest.String()); err != nil {
+	if err := fs.Tag(ctx, root, root.Digest.String()); err != nil {
 		return errors.Wrap(err, "tagging memory store")
 	}
 
@@ -183,7 +189,7 @@ func ociLayout(ctx context.Context, dir, ver string) error {
 	}
 
 	// Copy content (graph)
-	if _, err := oras.Copy(ctx, store, root.Digest.String(), dst, ver, oras.DefaultCopyOptions); err != nil {
+	if _, err := oras.Copy(ctx, fs, root.Digest.String(), dst, ver, oras.DefaultCopyOptions); err != nil {
 		return errors.Wrapf(err, "copying into %s", odir)
 	}
 
@@ -308,12 +314,36 @@ func dhubPush(ctx context.Context, dir, repoName, version string) error {
 		return errors.Wrapf(err, "upserting ctferio/%s", repoName)
 	}
 
-	// Then push all through ORAS
-	ref := fmt.Sprintf("docker.io/ctferio/%s:%s", repoName, version)
-	if err := scenario.EncodeOCI(ctx, ref, dir, false, "ctferio", dhPat); err != nil {
-		return errors.Wrapf(err, "pushing %s", ref)
+	// Load OCI layout that previous steps built
+	ociLayout, err := oci.New(filepath.Join(dir, dist))
+	if err != nil {
+		return err
 	}
-	return nil
+
+	// Will be uploaded with this reference
+	ref := fmt.Sprintf("docker.io/ctferio/%s:%s", repoName, version)
+
+	// Then copy to remote
+	repo, err := remote.NewRepository(ref)
+	if err != nil {
+		return err
+	}
+	repo.Client = &auth.Client{
+		Cache: auth.NewCache(),
+		Client: &http.Client{
+			Transport: otelhttp.NewTransport(retry.NewTransport(nil)),
+		},
+		Credential: auth.StaticCredential("docker.io", auth.Credential{
+			Username: "ctferio",
+			Password: dhPat,
+		}),
+	}
+	_, err = oras.Copy(ctx,
+		ociLayout, version, // from OCI layout
+		repo, version, // to DockerHub
+		oras.DefaultCopyOptions,
+	)
+	return err
 }
 
 type DockerHubClient struct {
