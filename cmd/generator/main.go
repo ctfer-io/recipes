@@ -286,11 +286,9 @@ func compress(path, target string) error {
 		if err != nil {
 			return err
 		}
-		if _, err := io.Copy(tarWriter, f); err != nil {
+		defer func() {
 			_ = f.Close()
-			return errors.Wrapf(err, "failed to copy %s", pf)
-		}
-		_ = f.Close()
+		}()
 
 		fi, err := os.Stat(fpath)
 		if err != nil {
@@ -302,6 +300,10 @@ func compress(path, target string) error {
 		}
 		if err := tarWriter.WriteHeader(fileHeader); err != nil {
 			return errors.Wrapf(err, "failed to write tar header of %s", pf)
+		}
+
+		if _, err := io.Copy(tarWriter, f); err != nil {
+			return errors.Wrapf(err, "failed to copy %s", pf)
 		}
 	}
 
