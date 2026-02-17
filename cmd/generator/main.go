@@ -72,7 +72,9 @@ func run(ctx context.Context) (err error) {
 	}
 
 	// Create root directory in which to export OCI recipes
-	_ = os.Mkdir(dist, os.ModePerm)
+	if err := os.Mkdir(dist, os.ModePerm); err != nil {
+		return err
+	}
 
 	ver := os.Getenv("VERSION")
 
@@ -278,66 +280,31 @@ func compress(path, target string) error {
 	gzipWriter := gzip.NewWriter(tarfile)
 	tarWriter := tar.NewWriter(gzipWriter)
 
-	dir := filepath.Join(path, dist)
-	err = filepath.Walk(dir, func(file string, fi os.FileInfo, err error) error {
+	// Compress the prepared files
+	for _, pf := range preparedFiles {
+		fpath := filepath.Join(path, pf)
+
+		f, err := os.Open(fpath)
 		if err != nil {
 			return err
 		}
+		if _, err := io.Copy(tarWriter, f); err != nil {
+			_ = f.Close()
+			return err
+		}
+		_ = f.Close()
 
-		// Compute the relative path from the source directory
-		relPath, err := filepath.Rel(dir, file)
+		fi, err := os.Stat(fpath)
 		if err != nil {
 			return err
 		}
-
-		// Ensure we skip the root directory
-		if relPath == "." {
-			return nil
+		fileHeader, err := tar.FileInfoHeader(fi, "")
+		if err != nil {
+			return err
 		}
-
-		// Open file if it's not a directory
-		var fileReader io.Reader
-		var fileHeader *tar.Header
-
-		if fi.Mode().IsRegular() {
-			f, err := os.Open(file)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			fileReader = f
-
-			fileHeader, err = tar.FileInfoHeader(fi, "")
-			if err != nil {
-				return err
-			}
-			fileHeader.Name = relPath
-		} else if fi.IsDir() {
-			fileHeader = &tar.Header{
-				Name:     relPath + "/",
-				Typeflag: tar.TypeDir,
-				Mode:     int64(fi.Mode()),
-				ModTime:  fi.ModTime(),
-			}
-		} else {
-			// Ignore symlinks, devices, etc.
-			return nil
-		}
-
 		if err := tarWriter.WriteHeader(fileHeader); err != nil {
-			return fmt.Errorf("failed to write tar header: %w", err)
+			return fmt.Errorf("failed to write tar header")
 		}
-
-		if fileReader != nil {
-			if _, err := io.Copy(tarWriter, fileReader); err != nil {
-				return fmt.Errorf("failed to write file data: %w", err)
-			}
-		}
-
-		return nil
-	})
-	if err != nil {
-		return errors.Wrapf(err, "creating tar.gz %s", target)
 	}
 
 	// Close all writers and file
