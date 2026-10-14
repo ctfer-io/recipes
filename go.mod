@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/form/v4 v4.5.0
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/pkg/errors v0.9.1
-	github.com/pulumi/pulumi/sdk/v3 v3.267.0
+	github.com/pulumi/pulumi/sdk/v3 v3.268.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.71.0
 	go.uber.org/multierr v1.11.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -22,7 +22,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.3.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/ProtonMail/go-crypto v1.4.1 // indirect
+	github.com/ProtonMail/go-crypto v1.5.2 // indirect
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
@@ -58,8 +58,8 @@ require (
 	github.com/fsouza/go-dockerclient v1.12.3 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
-	github.com/go-git/go-billy/v6 v6.0.0-alpha.1 // indirect
-	github.com/go-git/go-git/v6 v6.0.0-alpha.4 // indirect
+	github.com/go-git/go-billy/v6 v6.0.0-beta.1 // indirect
+	github.com/go-git/go-git/v6 v6.0.0-beta.1 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -82,7 +82,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
 	github.com/klauspost/compress v1.18.7 // indirect
-	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/kubernetes/kompose v1.38.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -112,7 +111,7 @@ require (
 	github.com/opentracing/basictracer-go v1.1.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pgavlin/fx v0.1.6 // indirect
-	github.com/pjbgf/sha1cd v0.6.0 // indirect
+	github.com/pjbgf/sha1cd v0.7.0 // indirect
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231 // indirect
 	github.com/pulumi/pulumi-cloud-sdk/go v1.20260918.0 // indirect
